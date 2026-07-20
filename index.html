@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+
+<html lang="de">
+
+<head>
+
+  <meta charset="UTF-8" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Zehnerübergang im 100er-Raum – Subtraktion</title>
+
+  <style>
+
+    :root {
+
+      --bg: #f5f5f5;
+
+      --card: #ffffff;
+
+      --text: #222;
+
+      --blue: #8fc0ff;
+
+      --blue-dark: #4d8ff5;
+
+      --ok: #cfeecf;
+
+      --bad: #ffd7d7;
+
+    }
+
+    * {
+
+      box-sizing: border-box;
+
+    }
+
+    body {
+
+      margin: 0;
+
+      font-family: Arial, sans-serif;
+
+      background: var(--bg);
+
+      color: var(--text);
+
+      text-align: center;
+
+      padding: 24px;
+
+    }
+
+    .wrap {
+
+      max-width: 1200px;
+
+      margin: 0 auto;
+
+      background: var(--card);
+
+      border-radius: 20px;
+
+      padding: 24px;
+
+      box-shadow: 0 10px 30px rgba(0, 0, 0, .08);
+
+    }
+
+    h1 {
+
+      margin: 0 0 8px;
+
+    }
+
+    .sub {
+
+      margin: 0 0 18px;
+
+      color: #555;
+
+    }
+
+    .controls {
+
+      display: flex;
+
+      justify-content: center;
+
+      gap: 10px;
+
+      flex-wrap: wrap;
+
+      margin-bottom: 20px;
+
+    }
+
+    button {
+
+      border: none;
+
+      border-radius: 12px;
+
+      padding: 12px 18px;
+
+      font-size: 16px;
+
+      cursor: pointer;
+
+      background: var(--blue);
+
+    }
+
+    button.primary {
+
+      background: var(--blue-dark);
+
+      color: #fff;
+
+    }
+
+    .grid {
+
+      display: grid;
+
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+
+      gap: 18px;
+
+      margin-top: 18px;
+
+    }
+
+    .task {
+
+      background: #fafafa;
+
+      border: 2px solid #e4e4e4;
+
+      border-radius: 18px;
+
+      padding: 18px 14px;
+
+      min-height: 220px;
+
+      display: flex;
+
+      flex-direction: column;
+
+      justify-content: center;
+
+    }
+
+    .topline,
+
+    .bottomline {
+
+      font-size: 28px;
+
+      line-height: 1.6;
+
+      display: flex;
+
+      justify-content: center;
+
+      align-items: center;
+
+      flex-wrap: nowrap;
+
+      gap: 8px;
+
+    }
+
+    .bottomline {
+
+      margin-top: 18px;
+
+    }
+
+    .slot {
+
+      min-width: 64px;
+
+      height: 48px;
+
+      border-bottom: 4px solid #222;
+
+      display: inline-flex;
+
+      align-items: center;
+
+      justify-content: center;
+
+      font-size: 28px;
+
+      cursor: pointer;
+
+      padding: 0 6px;
+
+      background: transparent;
+
+    }
+
+    .slot.small {
+
+      min-width: 42px;
+
+    }
+
+    .slot.correct {
+
+      background: var(--ok);
+
+      border-radius: 8px;
+
+    }
+
+    .slot.wrong {
+
+      background: var(--bad);
+
+      border-radius: 8px;
+
+    }
+
+    .heart-target {
+
+      position: relative;
+
+      display: inline-flex;
+
+      align-items: center;
+
+      justify-content: center;
+
+      gap: 8px;
+
+      width: 138px;
+
+      height: 98px;
+
+      margin-left: 2px;
+
+    }
+
+    .heart-target svg {
+
+      position: absolute;
+
+      inset: 0;
+
+      width: 100%;
+
+      height: 100%;
+
+      pointer-events: none;
+
+      opacity: .38;
+
+    }
+
+    .heart-front {
+
+      position: relative;
+
+      display: inline-flex;
+
+      align-items: center;
+
+      justify-content: center;
+
+      gap: 8px;
+
+      padding-top: 6px;
+
+    }
+
+    .pool-title {
+
+      margin-top: 22px;
+
+      font-size: 17px;
+
+      color: #555;
+
+    }
+
+    .pool {
+
+      display: flex;
+
+      flex-wrap: wrap;
+
+      justify-content: center;
+
+      gap: 10px;
+
+      margin-top: 12px;
+
+      min-height: 58px;
+
+    }
+
+    .tile {
+
+      display: inline-flex;
+
+      align-items: center;
+
+      justify-content: center;
+
+      min-width: 58px;
+
+      padding: 12px 16px;
+
+      border-radius: 12px;
+
+      background: var(--blue);
+
+      font-size: 24px;
+
+      cursor: pointer;
+
+      user-select: none;
+
+      box-shadow: 0 3px 0 rgba(0, 0, 0, .08);
+
+    }
+
+    .tile.selected {
+
+      background: var(--blue-dark);
+
+      color: #fff;
+
+      outline: 3px solid #dbe7ff;
+
+    }
+
+    .msg {
+
+      min-height: 28px;
+
+      margin-top: 16px;
+
+      font-size: 18px;
+
+    }
+
+    .hint {
+
+      margin-top: 8px;
+
+      color: #666;
+
+      font-size: 14px;
+
+    }
+
+    @media (max-width: 640px) {
+
+      body {
+
+        padding: 12px;
+
+      }
+
+      .wrap {
+
+        padding: 18px 10px;
+
+      }
+
+      .topline,
+
+      .bottomline {
+
+        font-size: 21px;
+
+        gap: 6px;
+
+      }
+
+      .slot {
+
+        min-width: 52px;
+
+        height: 42px;
+
+        font-size: 23px;
+
+      }
+
+      .slot.small {
+
+        min-width: 38px;
+
+      }
+
+      .heart-target {
+
+        width: 120px;
+
+        height: 88px;
+
+      }
+
+      .heart-front {
+
+        padding-top: 4px;
+
+        gap: 6px;
+
+      }
+
+      .grid {
+
+        grid-template-columns: 1fr;
+
+      }
+
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+  <div class="wrap">
+
+    <h1>Zehnerübergang im 100er-Raum</h1>
+
+    <p class="sub">
+
+      Wähle unten eine Zahl und tippe dann auf den passenden Platz.
+
+    </p>
+
+    <div class="controls">
+
+      <button id="checkBtn" class="primary">Überprüfen</button>
+
+      <button id="clearBtn">Leeren</button>
+
+      <button id="newBtn">Neue 6 Aufgaben</button>
+
+    </div>
+
+    <div id="taskGrid" class="grid"></div>
+
+    <div class="pool-title">
+
+      Vorgegebene Zahlen zum Einsetzen:
+
+    </div>
+
+    <div id="pool" class="pool"></div>
+
+    <div id="msg" class="msg"></div>
+
+    <div class="hint">
+
+      Tipp: Zerlege die zweite Zahl so, dass du zuerst bis zum vorherigen Zehner zurückrechnest.
+
+    </div>
+
+  </div>
+
+  <script>
+
+    const state = {
+
+      tasks: [],
+
+      selectedTile: null
+
+    };
+
+    const grid = document.getElementById("taskGrid");
+
+    const pool = document.getElementById("pool");
+
+    const msg = document.getElementById("msg");
+
+    function shuffle(arr) {
+
+      const copy = arr.slice();
+
+      for (let i = copy.length - 1; i > 0; i--) {
+
+        const j = Math.floor(Math.random() * (i + 1));
+
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+
+      }
+
+      return copy;
+
+    }
+
+    function randInt(min, max) {
+
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+
+    }
+
+    function createTask(a, b) {
+
+      const split1 = a % 10;
+
+      const split2 = b - split1;
+
+      const result = a - b;
+
+      return {
+
+        a,
+
+        b,
+
+        split1,
+
+        split2,
+
+        result
+
+      };
+
+    }
+
+    function generateTasks(count) {
+
+      const tasks = [];
+
+      const used = new Set();
+
+      while (tasks.length < count) {
+
+        /*
+
+          Die erste Zahl liegt zwischen 21 und 99.
+
+          Sie darf keine Null als Einerstelle besitzen.
+
+        */
+
+        const a = randInt(21, 99);
+
+        const ones = a % 10;
+
+        if (ones === 0) {
+
+          continue;
+
+        }
+
+        /*
+
+          Die zweite Zahl ist einstellig und größer als die Einerstelle.
+
+          Dadurch muss ein Zehner überschritten werden.
+
+          Beispiel:
+
+          67 - 9
+
+          Einerstelle: 7
+
+          9 ist größer als 7
+
+          Zerlegung: 7 + 2
+
+        */
+
+        const minB = ones + 1;
+
+        if (minB > 9) {
+
+          continue;
+
+        }
+
+        const b = randInt(minB, 9);
+
+        const result = a - b;
+
+        /*
+
+          Es werden nur Aufgaben mit einem positiven Ergebnis verwendet.
+
+        */
+
+        if (result < 10) {
+
+          continue;
+
+        }
+
+        const key = `${a}-${b}`;
+
+        if (!used.has(key)) {
+
+          used.add(key);
+
+          tasks.push(createTask(a, b));
+
+        }
+
+      }
+
+      state.tasks = tasks;
+
+    }
+
+    function buildTaskHTML(task, index) {
+
+      const intermediateResult = task.a - task.split1;
+
+      return `
+
+        <div class="task" data-task="${index}">
+
+          <div class="topline">
+
+            <span>${task.a}</span>
+
+            <span>−</span>
+
+            <span>${task.b}</span>
+
+            <span>=</span>
+
+            <span
+
+              class="slot"
+
+              data-answer="${task.result}"
+
+              aria-label="Ergebnis eintragen"
+
+            ></span>
+
+          </div>
+
+          <div class="bottomline">
+
+            <span>${task.a}</span>
+
+            <span>−</span>
+
+            <span
+
+              class="slot small"
+
+              data-answer="${task.split1}"
+
+              aria-label="Erster Teil der Zerlegung"
+
+            ></span>
+
+            <span>−</span>
+
+            <div class="heart-target">
+
+              <svg viewBox="0 0 120 100" aria-hidden="true">
+
+                <path
+
+                  d="M60 92 L52 84
+
+                     C20 56 8 43 8 25
+
+                     C8 13 18 4 30 4
+
+                     C41 4 49 11 60 24
+
+                     C71 11 79 4 90 4
+
+                     C102 4 112 13 112 25
+
+                     C112 43 100 56 68 84 Z"
+
+                  fill="white"
+
+                  stroke="#666"
+
+                  stroke-width="2"
+
+                ></path>
+
+              </svg>
+
+              <div class="heart-front">
+
+                <span
+
+                  class="slot small"
+
+                  data-answer="${task.split2}"
+
+                  aria-label="Zweiter Teil der Zerlegung"
+
+                ></span>
+
+                <span>=</span>
+
+                <span
+
+                  class="slot"
+
+                  data-answer="${task.result}"
+
+                  aria-label="Ergebnis eintragen"
+
+                ></span>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      `;
+
+    }
+
+    function renderTasks() {
+
+      grid.innerHTML = state.tasks
+
+        .map((task, index) => buildTaskHTML(task, index))
+
+        .join("");
+
+      document.querySelectorAll(".slot").forEach(slot => {
+
+        slot.addEventListener("click", () => {
+
+          if (!state.selectedTile) {
+
+            msg.textContent = "Bitte wähle zuerst unten eine Zahl aus.";
+
+            return;
+
+          }
+
+          slot.textContent = state.selectedTile.dataset.value;
+
+          slot.classList.remove("correct", "wrong");
+
+          /*
+
+            Die verwendete Zahlenkarte wird ausgeblendet.
+
+            So kann jede Karte nur einmal eingesetzt werden.
+
+          */
+
+          state.selectedTile.classList.remove("selected");
+
+          state.selectedTile.classList.add("used");
+
+          state.selectedTile.style.visibility = "hidden";
+
+          state.selectedTile = null;
+
+          msg.textContent = "";
+
+        });
+
+      });
+
+    }
+
+    function renderPool() {
+
+      const values = [];
+
+      state.tasks.forEach(task => {
+
+        values.push(
+
+          task.result,
+
+          task.split1,
+
+          task.split2,
+
+          task.result
+
+        );
+
+      });
+
+      const mixedValues = shuffle(values);
+
+      pool.innerHTML = "";
+
+      mixedValues.forEach(value => {
+
+        const tile = document.createElement("div");
+
+        tile.className = "tile";
+
+        tile.textContent = value;
+
+        tile.dataset.value = value;
+
+        tile.addEventListener("click", () => {
+
+          if (tile.classList.contains("used")) {
+
+            return;
+
+          }
+
+          document.querySelectorAll(".tile").forEach(otherTile => {
+
+            otherTile.classList.remove("selected");
+
+          });
+
+          tile.classList.add("selected");
+
+          state.selectedTile = tile;
+
+          msg.textContent = "";
+
+        });
+
+        pool.appendChild(tile);
+
+      });
+
+    }
+
+    function restoreTile(value) {
+
+      const hiddenTiles = Array.from(
+
+        document.querySelectorAll(".tile.used")
+
+      );
+
+      const matchingTile = hiddenTiles.find(tile => {
+
+        return tile.dataset.value === String(value);
+
+      });
+
+      if (matchingTile) {
+
+        matchingTile.classList.remove("used", "selected");
+
+        matchingTile.style.visibility = "visible";
+
+      }
+
+    }
+
+    function clearAll() {
+
+      document.querySelectorAll(".slot").forEach(slot => {
+
+        slot.textContent = "";
+
+        slot.classList.remove("correct", "wrong");
+
+      });
+
+      document.querySelectorAll(".tile").forEach(tile => {
+
+        tile.classList.remove("selected", "used");
+
+        tile.style.visibility = "visible";
+
+      });
+
+      state.selectedTile = null;
+
+      msg.textContent = "";
+
+    }
+
+    function checkAll() {
+
+      let allCorrect = true;
+
+      let emptyFields = 0;
+
+      document.querySelectorAll(".slot").forEach(slot => {
+
+        const correctAnswer = String(slot.dataset.answer);
+
+        const enteredValue = slot.textContent.trim();
+
+        slot.classList.remove("correct", "wrong");
+
+        if (enteredValue === "") {
+
+          slot.classList.add("wrong");
+
+          emptyFields++;
+
+          allCorrect = false;
+
+        } else if (enteredValue === correctAnswer) {
+
+          slot.classList.add("correct");
+
+        } else {
+
+          slot.classList.add("wrong");
+
+          allCorrect = false;
+
+        }
+
+      });
+
+      if (allCorrect) {
+
+        msg.textContent = "✅ Super! Alles richtig.";
+
+      } else if (emptyFields > 0) {
+
+        msg.textContent = "❌ Es sind noch nicht alle Felder richtig ausgefüllt.";
+
+      } else {
+
+        msg.textContent = "❌ Einige Felder stimmen noch nicht.";
+
+      }
+
+    }
+
+    function newRound() {
+
+      state.selectedTile = null;
+
+      generateTasks(6);
+
+      renderTasks();
+
+      renderPool();
+
+      msg.textContent = "";
+
+    }
+
+    document
+
+      .getElementById("checkBtn")
+
+      .addEventListener("click", checkAll);
+
+    document
+
+      .getElementById("clearBtn")
+
+      .addEventListener("click", clearAll);
+
+    document
+
+      .getElementById("newBtn")
+
+      .addEventListener("click", newRound);
+
+    newRound();
+
+  </script>
+
+</body>
+
+</html>
